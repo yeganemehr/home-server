@@ -1,0 +1,10 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Default-Start:	2
+# Default-Stop:		
+### END INIT INFO
+
+update-initramfs -u
+
+update-rc.d update-initramfs remove
