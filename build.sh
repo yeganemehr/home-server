@@ -2,11 +2,14 @@
 
 set -e
 
-VM_DISK_SIZE_MB=2048
 
 echo "Building docker image..."
 IMAGE_ID=$(docker build -q .)
 echo "Image ID: $IMAGE_ID"
+
+IMAGE_SIZE=$(docker image inspect -f "{{ .Size }}" $IMAGE_ID)
+echo "Image Size:" $(numfmt --to=iec $IMAGE_SIZE)
+DISK_SIZE=$(($IMAGE_SIZE + (200 * 1024 * 1024) + 512 - ($IMAGE_SIZE % 512)))
 
 echo "Running container..."
 CONTAINER_ID=$(docker run -d $IMAGE_ID)
@@ -15,7 +18,7 @@ echo "container ID: $CONTAINER_ID"
 echo "Building disk image..."
 rm -fr dist wd
 mkdir dist wd
-fallocate --length "${VM_DISK_SIZE_MB}M" dist/debian.img
+fallocate --length $DISK_SIZE dist/debian.img
 echo "type=83,bootable" | sfdisk dist/debian.img
 echo "Building disk image: done"
 
@@ -46,7 +49,3 @@ losetup -d $LOOPDEVICE
 
 dd if=/usr/lib/syslinux/mbr/mbr.bin of=dist/debian.img bs=440 count=1 conv=notrunc
 echo "Done"
-
-# qemu-img convert -c dist/debian.img -O qcow2 dist/debian.qcow2
-
-# rm -f dist/debian.img 
