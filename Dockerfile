@@ -2,7 +2,7 @@
 FROM debian:12
 
 ARG DEBIAN_FRONTEND="noninteractive"
-COPY fs/etc/apt /etc/apt
+
 RUN apt update
 RUN apt -y install zstd tasksel linux-image-amd64 firmware-linux-free console-setup-linux systemd-sysv
 RUN tasksel install standard
