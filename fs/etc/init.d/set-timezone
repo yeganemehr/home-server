@@ -5,6 +5,8 @@
 # Default-Stop:		
 ### END INIT INFO
 
+set -e
+
 timedatectl set-timezone Asia/Tehran
 
 update-rc.d set-timezone remove

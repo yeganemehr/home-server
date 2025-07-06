@@ -5,6 +5,8 @@
 # Default-Stop:		
 ### END INIT INFO
 
+set -e
+
 update-initramfs -u
 
 update-rc.d update-initramfs remove
