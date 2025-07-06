@@ -6,7 +6,7 @@ COPY fs/etc/apt /etc/apt
 RUN apt update
 RUN apt -y install zstd tasksel linux-image-amd64 firmware-linux-free console-setup-linux systemd-sysv
 RUN tasksel install standard
-RUN apt -y install dnsutils systemd-timesyncd wireguard curl jq tmux iptables openvpn unzip lm-sensors nload openssh-server nano network-manager htop zsh git 
+RUN apt -y install dnsutils systemd-timesyncd wireguard curl jq tmux iptables openvpn unzip lm-sensors nload openssh-server nano network-manager htop zsh git cloud-guest-utils parted
 RUN rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
 RUN wget -O /root/.ssh/authorized_keys https://github.com/yeganemehr.keys && \
