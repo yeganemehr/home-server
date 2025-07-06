@@ -9,8 +9,6 @@ RUN tasksel install standard
 RUN apt -y install dnsutils systemd-timesyncd wireguard curl jq tmux iptables openvpn unzip lm-sensors nload openssh-server nano network-manager htop zsh git 
 RUN rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
-RUN passwd -d root
-
 RUN wget -O /root/.ssh/authorized_keys https://github.com/yeganemehr.keys && \
     chmod 0600 /root/.ssh/authorized_keys
 
@@ -34,3 +32,5 @@ RUN update-rc.d set-timezone defaults && \
     update-rc.d update-initramfs defaults
 
 RUN /var/lib/sing-box/custom/build.sh
+
+RUN passwd -d root && passwd -e root
