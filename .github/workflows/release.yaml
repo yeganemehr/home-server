@@ -1,0 +1,26 @@
+name: Release Image
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Git repository
+        uses: actions/checkout@v4
+
+      - name: Install requirements
+        run: sudo apt -y install extlinux moreutils
+
+      - name: Build Image
+        run: sudo ./build.sh
+
+      - name: Create Release
+        run: gh release create "$TAG_NAME" dist/*.img
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
