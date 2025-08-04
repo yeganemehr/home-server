@@ -1,2 +1,4 @@
 dist/
 .git
+vpn-manager/vendor
+vpn-manager/.env
