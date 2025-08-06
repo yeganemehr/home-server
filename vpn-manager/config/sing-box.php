@@ -1,9 +1,10 @@
 <?php
+
 $template = [
     'outbounds' => [
         [
             'type' => 'direct',
-            'bind_interface' => env("SINGBOX_DIRECT_INTERFACE"),
+            'bind_interface' => env('SINGBOX_DIRECT_INTERFACE'),
             'tag' => 'direct',
         ],
         [
@@ -22,6 +23,7 @@ $template = [
             'tag' => ['proxy', 'en-proxy'],
         ],
         [
+            '@enable' => env('MULLVAD_DRIVER') === 'wireguard',
             'type' => 'wireguard',
             'server' => '149.40.50.112',
             'server_port' => 11640,
@@ -38,6 +40,7 @@ $template = [
             'tag' => ['proxy', 'us-proxy'],
         ],
         [
+            '@enable' => env('MULLVAD_DRIVER') === 'wireguard',
             'type' => 'wireguard',
             'server' => '95.173.222.31',
             'server_port' => 27743,
@@ -53,10 +56,20 @@ $template = [
             'mtu' => 1280,
             'tag' => ['proxy', 'fr-proxy'],
         ],
+        [
+            '@enable' => env('MULLVAD_DRIVER') === 'openvpn',
+            'bind_interface' => 'mullvad-de',
+            'tag' => ['proxy', 'de-proxy'],
+        ],
+        [
+            '@enable' => env('MULLVAD_DRIVER') === 'openvpn',
+            'bind_interface' => 'mullvad-fr',
+            'tag' => ['proxy', 'fr-proxy'],
+        ],
     ],
     'route' => [
         'final' => env('SINGBOX_FINAL', 'direct'),
-        'default_interface' => env("SINGBOX_DIRECT_INTERFACE"),
+        'default_interface' => env('SINGBOX_DIRECT_INTERFACE'),
         'auto_detect_interface' => false,
         'rule_set' => [
             ['format' => 'binary', 'type' => 'local', 'path' => 'sing-geosite/geosite-category-ir.srs', 'tag' => 'geosite:category-ir'],
@@ -101,6 +114,7 @@ $template = [
             ['format' => 'binary', 'type' => 'local', 'path' => 'Iran-sing-box-rules/geosite-oracle.srs', 'tag' => 'geosite:oracle'],
             ['format' => 'binary', 'type' => 'local', 'path' => 'custom/geosite-postman.srs', 'tag' => 'geosite:postman'],
             ['format' => 'binary', 'type' => 'local', 'path' => 'custom/geosite-google-direct.srs', 'tag' => 'geosite:google-direct'],
+            ['format' => 'binary', 'type' => 'local', 'path' => 'custom/geoip-mullvad.srs', 'tag' => 'geoip:mullvad'],
         ],
         'rules' => [
             ['action' => 'sniff'],
@@ -117,12 +131,13 @@ $template = [
                     'geosite:category-ru' => 'direct',
                     'geosite:category-cn' => 'direct',
                     'geosite:google-direct' => 'direct',
+                    'geoip:mullvad' => 'direct',
                     'geosite:spotify' => 'fr-proxy',
                     'geosite:google' => 'fr-proxy',
-                    'geosite:category-porn' => 'us-proxy',
-                    'geosite:x' => 'us-proxy',
-                    'geosite:twitter' => 'us-proxy',
-                    'geoip:twitter' => 'us-proxy',
+                    'geosite:category-porn' => ['us-proxy', 'de-proxy'],
+                    'geosite:x' => ['us-proxy', 'de-proxy'],
+                    'geosite:twitter' => ['us-proxy', 'de-proxy'],
+                    'geoip:twitter' => ['us-proxy', 'de-proxy'],
                     'geoip:telegram' => 'proxy',
                     'domain_suffix:cloudflare-dns.com' => 'proxy',
                     'domain_suffix:unibet.co.uk' => 'proxy',
@@ -185,13 +200,6 @@ $template = [
             'address' => [
                 '172.31.255.252/30',
             ],
-            'route_exclude_address' => [
-                '193.138.7.132/32',
-                '193.32.126.81/32',
-                '193.32.126.82/32',
-                '146.70.184.194/32',
-                '146.70.184.130/32',
-            ],
             'stack' => 'system',
             'tag' => 'tun-in',
             'type' => 'tun',
@@ -221,8 +229,8 @@ $template = [
     ],
 ];
 
-if (env("SINGBOX_IS_GATEWAY", false)) {
-    $template['outbounds'][] = [
+if (env('SINGBOX_IS_GATEWAY', false)) {
+    $template['inbounds'][] = [
         'type' => 'direct',
         'listen' => '0.0.0.0',
         'listen_port' => 53,

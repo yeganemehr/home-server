@@ -46,6 +46,7 @@ RUN --mount=type=bind,source=vpn-manager,target=/opt/vpn-manager \
     ./vpn-manager app:build --build-version=1.0.0 -n && \
     mv builds/vpn-manager /usr/local/bin/vpn-manager && \
     mv config/sing-box.php /var/lib/sing-box/template.php && \
+    cat .env.example >> /etc/environment && \
     cd / && \
     rm -fr /tmp/vpn-manager && \
     vpn-manager sing-box:rebuild --output=/etc/sing-box/config.json
@@ -56,6 +57,7 @@ COPY fs/ /
 RUN update-rc.d set-timezone defaults && \
     update-rc.d update-initramfs defaults
 
-RUN /var/lib/sing-box/custom/build.sh
+RUN /var/lib/sing-box/custom/build-mullvad.php && \
+    /var/lib/sing-box/custom/build.sh
 
 RUN passwd -d root && passwd -e root

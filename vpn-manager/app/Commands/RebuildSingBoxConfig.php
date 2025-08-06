@@ -44,6 +44,10 @@ class RebuildSingBoxConfig extends Command
 
     protected function buildConfig(array $template): array
     {
+        $template['outbounds'] = array_filter($template['outbounds'], fn ($outbound) => ! isset($outbound['@enable']) || $outbound['@enable'] !== false);
+        $template['outbounds'] = array_map(fn ($outbound) => Arr::except($outbound, ['@enable']), $template['outbounds']);
+        $template['outbounds'] = array_values($template['outbounds']);
+
         if (! isset($template['log'])) {
             $template['log'] = ['level' => 'debug'];
         }
@@ -103,7 +107,7 @@ class RebuildSingBoxConfig extends Command
                 $simpleRules = array_filter(Arr::get($template, 'route.rules'), fn ($r) => isset($r['simple_rules']));
                 $simpleRules = array_column($simpleRules, 'simple_rules');
                 $simpleRules = array_merge(...$simpleRules);
-                $simpleRules = $this->convertSimpleRulesToDNSRules($simpleRules);
+                $simpleRules = $this->convertSimpleRulesToDNSRules($template, $simpleRules);
 
                 array_splice($rules, $x, 1, $simpleRules);
                 $x += count($simpleRules);
@@ -118,8 +122,20 @@ class RebuildSingBoxConfig extends Command
         return $rules;
     }
 
-    protected function convertSimpleRulesToDNSRules(array $rules): array
+    protected function convertSimpleRulesToDNSRules(array $template, array $rules): array
     {
+        $outbounds = Arr::flatten(array_column($template['outbounds'], 'tag'));
+        foreach ($rules as $key => $action) {
+            if (is_string($action) and $action !== 'block') {
+                $action = [$action];
+            }
+            if (is_array($action)) {
+                $rules[$key] = array_find($action, fn ($outbound) => in_array($outbound, $outbounds));
+                if (! $rules[$key]) {
+                    unset($rules[$key]);
+                }
+            }
+        }
         $rules = array_filter($rules, fn (string $k) => Str::startsWith($k, ['domain_suffix', 'geosite']), ARRAY_FILTER_USE_KEY);
         $actionGroups = collect($rules)
             ->groupBy([fn ($v) => $v, fn ($v, $key) => Str::before($key, ':')], true)
@@ -159,8 +175,21 @@ class RebuildSingBoxConfig extends Command
         return $rules;
     }
 
-    protected function convertSimpleRulesToRoutingRules(array $rules): array
+    protected function convertSimpleRulesToRoutingRules(array $template, array $rules): array
     {
+        $outbounds = Arr::flatten(array_column($template['outbounds'], 'tag'));
+        foreach ($rules as $key => $action) {
+            if (is_string($action) and $action !== 'block') {
+                $action = [$action];
+            }
+            if (is_array($action)) {
+                $rules[$key] = array_find($action, fn ($outbound) => in_array($outbound, $outbounds));
+                if (! $rules[$key]) {
+                    unset($rules[$key]);
+                }
+            }
+        }
+
         $actionGroups = collect($rules)
             ->groupBy([fn ($v) => $v, fn ($v, $key) => Str::before($key, ':')], true)
             ->map(function ($actionGroup) {
@@ -262,7 +291,7 @@ class RebuildSingBoxConfig extends Command
         $rules = Arr::get($template, 'route.rules', []);
         for ($x = 0; $x < count($rules); $x++) {
             if (isset($rules[$x]['simple_rules'])) {
-                $simpleRules = $this->convertSimpleRulesToRoutingRules($rules[$x]['simple_rules']);
+                $simpleRules = $this->convertSimpleRulesToRoutingRules($template, $rules[$x]['simple_rules']);
 
                 array_splice($rules, $x, 1, $simpleRules);
                 $x += count($simpleRules);
