@@ -58,11 +58,13 @@ $template = [
         ],
         [
             '@enable' => env('MULLVAD_DRIVER') === 'openvpn',
+            'type' => 'direct',
             'bind_interface' => 'mullvad-de',
             'tag' => ['proxy', 'de-proxy'],
         ],
         [
             '@enable' => env('MULLVAD_DRIVER') === 'openvpn',
+            'type' => 'direct',
             'bind_interface' => 'mullvad-fr',
             'tag' => ['proxy', 'fr-proxy'],
         ],
