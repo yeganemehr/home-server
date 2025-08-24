@@ -1,5 +1,6 @@
 fs/etc/openvpn/mullvad_userpass.txt
 fs/etc/sing-box/config.json
+fs/var/lib/sing-box/ui/
 fs/var/lib/sing-box/custom/*.srs
 fs/var/lib/sing-box/custom/geoip-mullvad.json
 dist/

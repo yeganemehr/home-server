@@ -1,13 +1,14 @@
 <?php
-
 $template = [
     'outbounds' => [
         [
             'type' => 'direct',
             'bind_interface' => env('SINGBOX_DIRECT_INTERFACE'),
+            'inet4_bind_address' => env('SINGBOX_DIRECT_INTERFACE_IP', '192.168.1.254'),
             'tag' => 'direct',
         ],
         [
+            '@enable' => false,
             'type' => 'vless',
             'packet_encoding' => '',
             'server' => '46.29.34.167',
@@ -21,6 +22,31 @@ $template = [
             'uuid' => env('SINGBOX_EN_PROXY_UUID'),
             'domain_strategy' => 'ipv4_only',
             'tag' => ['proxy', 'en-proxy'],
+        ],
+        [
+            'type' => 'vless',
+            'server' => '195.201.76.49',
+            'server_port' => 32763,
+            'uuid' => env('SINGBOX_FILTERNESS_PROXY_UUID'),
+            'transport' => [
+                'type' => 'grpc',
+                'service_name' => 'dfsgvsdfg2',
+            ],
+            'tls' => [
+                'enabled' => true,
+                'insecure' => false,
+                'reality' => [
+                    'enabled' => true,
+                    'public_key' => env('SINGBOX_FILTERNESS_PROXY_PUBKEY'),
+                    'short_id' => env('SINGBOX_FILTERNESS_PROXY_SHORTID'),
+                ],
+                'server_name' => 'journalofbigdata.springeropen.com',
+                'utls' => [
+                    'enabled' => true,
+                    'fingerprint' => 'chrome',
+                ]
+            ],
+            'tag' => ['proxy', 'filterness-proxy'],
         ],
         [
             '@enable' => env('MULLVAD_DRIVER') === 'wireguard',
@@ -117,6 +143,8 @@ $template = [
             ['format' => 'binary', 'type' => 'local', 'path' => 'custom/geosite-postman.srs', 'tag' => 'geosite:postman'],
             ['format' => 'binary', 'type' => 'local', 'path' => 'custom/geosite-google-direct.srs', 'tag' => 'geosite:google-direct'],
             ['format' => 'binary', 'type' => 'local', 'path' => 'custom/geoip-mullvad.srs', 'tag' => 'geoip:mullvad'],
+            ['format' => 'binary', 'type' => 'local', 'path' => 'custom/geosite-rustdesk.srs', 'tag' => 'geosite:rustdesk'],
+            ['format' => 'binary', 'type' => 'local', 'path' => 'custom/geoip-rustdesk.srs', 'tag' => 'geoip:rustdesk'],
         ],
         'rules' => [
             ['action' => 'sniff'],
@@ -163,6 +191,8 @@ $template = [
                     'geoip:cloudflare' => 'proxy',
                     'geoip:facebook' => 'proxy',
                     'geoip:oracle' => 'proxy',
+                    'geoip:rustdesk' => 'direct',
+                    'geosite:rustdesk' => 'direct',
                     'domain_suffix:laravel.com' => 'proxy',
                     'domain_suffix:usefathom.com' => 'proxy',
                     'domain_suffix:jam.dev' => 'proxy',
@@ -187,7 +217,7 @@ $template = [
                     'geosite:zoom' => 'proxy',
                     'geosite:sourceforge' => 'proxy',
                     'geosite:category-anticensorship' => 'proxy',
-                    'geosite:category-dev' => 'proxy',
+                    'geosite:category-dev' => 'proxy'
                 ],
             ],
         ],
